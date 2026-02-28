@@ -1,0 +1,107 @@
+# 实验设置
+exp_name: default
+exp_num: 1
+continue_train: false
+
+# 训练参数 
+train_kwargs:
+  use_layer_learning: True
+  use_multi_layer: False
+  num_messages: [5, 5, 5]
+  seed: 0
+  batch_size: 512
+  data_batch_size: 10240
+  eval_expression_num: 96 # 评估时生成的表达式数量
+  record_expression_num: 16 # 记录时生成的表达式数量
+  early_stop: 1800 # 早停的轮数
+  score_func_name: focal_loss # 评分函数的名称
+  operator_type: mfs2 # LO operator name
+
+# 测试参数
+test_kwargs:
+  # test_file: /home/yqbai/ldpan/GS4LS/gs4-ls-updated/dataset/in-domain-test/Conmax/test
+  model_path: /home/yqbai/ldpan/GS4LS/gs4-ls-updated/results/results/train_graph/epfl2iwls/default/0827112122_cb1a02e/0_0/state_dict/des_perf/BON_4/train_iter_2000.pkl
+
+# 实例参数
+instance_kwargs:
+  instance_type: iwls2epfl
+  train_num: 10000
+  valid_num: 2000
+  batch_size_train: 1000
+  batch_size_valid: 2000
+  # Best_of_N: 16
+  Best_of_N: [1, 2, 4, 8]
+
+# 表达式参数
+expression_kwargs:
+  math_list: simple # 数学操作符列表
+  var_list: graph # 变量列表
+  scatter_max_degree: 2 # 最大层数
+
+# DSO 代理参数
+dso_agent_kwargs:
+  class: "TransformerDSOAgent"
+  transformer_kwargs:
+    min_length: 4
+    max_length: 64
+    soft_length: 32
+    layer_min_length: [16, 12, 8]
+    layer_max_length: [100, 50, 20]
+    layer_soft_length: [58, 31, 14]
+    two_sigma_square: 16 # 高斯分布的两倍方差
+    d_model: 32
+    num_heads: 4
+    d_ff: 128 # 前馈网络的维度
+    num_layers: 4 # Transformer 的层数
+    structural_encoding: true
+    layer_encoding: False
+    logits_parentsib: True
+    special_encoding: False
+
+# 强化学习算法参数
+rl_algo_kwargs:
+  class: PPOAlgo
+  kwargs:
+    lr_actor: 5e-5 # Actor 网络的学习率
+    K_epochs: 10 # 每次更新时的 epoch 数
+    entropy_coef: 0.2 # 熵系数，用于鼓励探索
+    entropy_gamma: 0.95 # 熵的衰减系数
+    entropy_decrease: false # 是否逐渐减少熵系数
+    lr_decrease: false # 是否逐渐减少学习率
+    decrease_period: 700 # 学习率或熵系数的衰减周期
+    is_tensorboard: True # 记录 tensorboard
+    train_algo: "GRPO+PPO" # 训练算法
+
+train_data_loader:
+  class: GraphDataLoader
+  kwargs:
+    npy_data_path: ./dataset/out-of-domain-test/iwls2epfl/train
+    save_dir: v2_processed_data
+    processed_npy_path: null
+    sample_bool: False
+    train_type: train
+    sample_type: upsampling
+    load_type: default_order
+    batch_size: 10240
+    max_batch_size: 10240
+    depth: 2
+    max_samples: null
+    fanin_nodes_type: remove
+    normalize: True
+    feature_selection: no_lut
+
+test_data_loader:
+  class: GraphDataLoader
+  kwargs: 
+    npy_data_path: ./dataset/out-of-domain-test/iwls2epfl/test
+    save_dir: v2_processed_data
+    processed_npy_path: null
+    sample_bool: False
+    train_type: test
+    max_batch_size: 10240
+    sample_type: upsampling
+    load_type: default_order
+    depth: 2
+    fanin_nodes_type: remove
+    normalize: True
+    feature_selection: no_lut
